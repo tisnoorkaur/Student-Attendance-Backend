@@ -14,6 +14,9 @@ import { connectDB } from './config/db.js'
 
 // Ensure MongoDB is connected before handling API requests
 app.use('/api', async (req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
   try {
     await connectDB()
     next()
