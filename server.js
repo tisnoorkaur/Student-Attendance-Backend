@@ -12,8 +12,15 @@ import classRoutes from './routes/classRoutes.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { connectDB } from './config/db.js'
 
-// Connect to MongoDB
-connectDB()
+// Ensure MongoDB is connected before handling API requests
+app.use('/api', async (req, res, next) => {
+  try {
+    await connectDB()
+    next()
+  } catch (error) {
+    next(error)
+  }
+})
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()

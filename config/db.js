@@ -27,6 +27,6 @@ export async function connectDB() {
     `);
   } catch (error) {
     console.error('❌ Failed to connect to MongoDB:', error.message);
-    // Don't exit process in serverless, let the route handler fail or retry next time
+    throw error;
   }
 }
