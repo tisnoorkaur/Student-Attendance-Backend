@@ -56,7 +56,7 @@ export async function register(req, res) {
       username: username.toLowerCase().trim(),
       password,
       schoolName: schoolName.trim(),
-      role: role || 'school',
+      role: 'school',
     });
 
     await newUser.save();

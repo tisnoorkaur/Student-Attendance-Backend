@@ -8,19 +8,30 @@ let isConnected = false;
 
 async function seedDefaultUsers() {
   try {
-    const userCount = await User.countDocuments();
-    if (userCount === 0) {
-      console.log('🌱 Seeding default users...');
-      
-      // Admin
-      const admin = new User({
+    // Admin check is always performed to ensure admin/admin is set
+    let admin = await User.findOne({ username: 'admin' });
+    if (!admin) {
+      console.log('🌱 Seeding admin user...');
+      admin = new User({
         username: 'admin',
-        password: 'adminpassword',
+        password: 'admin',
         role: 'admin',
         schoolName: 'System Administrator',
       });
       await admin.save();
+    } else {
+      const isMatch = await admin.comparePassword('admin');
+      if (!isMatch) {
+        console.log('🔄 Enforcing admin/admin credentials...');
+        admin.password = 'admin';
+        await admin.save();
+      }
+    }
 
+    const userCount = await User.countDocuments();
+    if (userCount <= 1) {
+      console.log('🌱 Seeding default school users...');
+      
       // School 1
       const school1 = new User({
         username: 'school1',

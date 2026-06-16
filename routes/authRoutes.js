@@ -7,8 +7,8 @@ const router = Router();
 router.post('/login', login);
 router.get('/me', authMiddleware, getMe);
 
-// Admin-only routes
-router.post('/register', authMiddleware, roleMiddleware(['admin']), register);
+// Public route for school self-registration
+router.post('/register', register);
 router.get('/schools', authMiddleware, roleMiddleware(['admin']), getSchools);
 router.delete('/schools/:username', authMiddleware, roleMiddleware(['admin']), deleteSchool);
 
