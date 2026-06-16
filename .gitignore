@@ -28,3 +28,5 @@ node_modules
 
 # Project specific
 database.json
+
+.vercel
