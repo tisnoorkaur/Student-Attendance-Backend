@@ -1,11 +1,11 @@
 import * as ClassModel from '../models/Class.js';
 
-export async function getAllClasses() {
-  return ClassModel.getAll();
+export async function getAllClasses(user) {
+  return ClassModel.getAll(user);
 }
 
-export async function getClassById(id) {
-  const cls = ClassModel.getById(id);
+export async function getClassById(id, user) {
+  const cls = await ClassModel.getById(id, user);
   if (!cls) {
     const error = new Error(`Class with id ${id} not found`);
     error.status = 404;
@@ -14,7 +14,7 @@ export async function getClassById(id) {
   return cls;
 }
 
-export async function createClass(data) {
+export async function createClass(data, user) {
   if (!data.name || !data.name.trim()) {
     const error = new Error('Class name is required');
     error.status = 400;
@@ -28,10 +28,11 @@ export async function createClass(data) {
   return ClassModel.create({
     name: data.name.trim(),
     section: data.section.trim(),
-  });
+    schoolId: data.schoolId,
+  }, user);
 }
 
-export async function updateClass(id, data) {
+export async function updateClass(id, data, user) {
   if (data.name !== undefined && !data.name.trim()) {
     const error = new Error('Class name cannot be empty');
     error.status = 400;
@@ -43,7 +44,7 @@ export async function updateClass(id, data) {
     throw error;
   }
 
-  const updated = ClassModel.update(id, data);
+  const updated = await ClassModel.update(id, data, user);
   if (!updated) {
     const error = new Error(`Class with id ${id} not found`);
     error.status = 404;
@@ -52,8 +53,8 @@ export async function updateClass(id, data) {
   return updated;
 }
 
-export async function deleteClass(id) {
-  const removed = ClassModel.remove(id);
+export async function deleteClass(id, user) {
+  const removed = await ClassModel.remove(id, user);
   if (!removed) {
     const error = new Error(`Class with id ${id} not found`);
     error.status = 404;

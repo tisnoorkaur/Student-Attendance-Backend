@@ -1,11 +1,5 @@
-/**
- * Attendance service layer.
- * Provides validated, async wrappers around the Attendance model.
- */
-
 import * as AttendanceModel from '../models/Attendance.js';
 
-/** Simple YYYY-MM-DD date format validator. */
 function isValidDate(dateStr) {
   if (!dateStr || typeof dateStr !== 'string') return false;
   const regex = /^\d{4}-\d{2}-\d{2}$/;
@@ -14,39 +8,22 @@ function isValidDate(dateStr) {
   return !isNaN(parsed.getTime());
 }
 
-/** Allowed attendance status values. */
 const VALID_STATUSES = ['present', 'absent', 'late', 'excused'];
 
-/**
- * Get all attendance records across all dates.
- * @returns {Promise<Array>}
- */
-export async function getAllAttendance() {
-  return AttendanceModel.getAll();
+export async function getAllAttendance(user) {
+  return AttendanceModel.getAll(user);
 }
 
-/**
- * Get attendance records for a given date.
- * @param {string} date - YYYY-MM-DD
- * @returns {Promise<Array>}
- * @throws {Error} If date is invalid.
- */
-export async function getAttendanceByDate(date) {
+export async function getAttendanceByDate(date, user) {
   if (!isValidDate(date)) {
     const error = new Error('Valid date in YYYY-MM-DD format is required');
     error.status = 400;
     throw error;
   }
-  return AttendanceModel.getByDate(date);
+  return AttendanceModel.getByDate(date, user);
 }
 
-/**
- * Mark attendance for a single student.
- * @param {object} data - { studentId, date, status }
- * @returns {Promise<object>}
- * @throws {Error} If validation fails.
- */
-export async function markAttendance(data) {
+export async function markAttendance(data, user) {
   if (!data.studentId) {
     const error = new Error('studentId is required');
     error.status = 400;
@@ -69,23 +46,17 @@ export async function markAttendance(data) {
     studentId: Number(data.studentId),
     date: data.date,
     status: data.status.toLowerCase(),
-  });
+    schoolId: data.schoolId,
+  }, user);
 }
 
-/**
- * Bulk mark attendance for multiple students.
- * @param {Array<{studentId: number, date: string, status: string}>} records
- * @returns {Promise<Array>}
- * @throws {Error} If records is not a non-empty array or individual records fail validation.
- */
-export async function bulkMarkAttendance(records) {
+export async function bulkMarkAttendance(records, user) {
   if (!Array.isArray(records) || records.length === 0) {
     const error = new Error('Records must be a non-empty array');
     error.status = 400;
     throw error;
   }
 
-  // Validate every record before writing any
   for (const [i, record] of records.entries()) {
     if (!record.studentId) {
       const error = new Error(`Record ${i}: studentId is required`);
@@ -110,36 +81,26 @@ export async function bulkMarkAttendance(records) {
     studentId: Number(r.studentId),
     date: r.date,
     status: r.status.toLowerCase(),
+    schoolId: r.schoolId,
   }));
 
-  return AttendanceModel.bulkMark(normalized);
+  return AttendanceModel.bulkMark(normalized, user);
 }
 
-/**
- * Reset (delete) all attendance records for a date.
- * @param {string} date - YYYY-MM-DD
- * @returns {Promise<number>} Number of records removed.
- * @throws {Error} If date is invalid.
- */
-export async function resetAttendance(date) {
+export async function resetAttendance(date, user) {
   if (!isValidDate(date)) {
     const error = new Error('Valid date in YYYY-MM-DD format is required');
     error.status = 400;
     throw error;
   }
-  return AttendanceModel.resetByDate(date);
+  return AttendanceModel.resetByDate(date, user);
 }
 
-/**
- * Get attendance history for a specific student.
- * @param {number} studentId
- * @returns {Promise<Array>}
- */
-export async function getStudentHistory(studentId) {
+export async function getStudentHistory(studentId, user) {
   if (!studentId) {
     const error = new Error('studentId is required');
     error.status = 400;
     throw error;
   }
-  return AttendanceModel.getByStudent(Number(studentId));
+  return AttendanceModel.getByStudent(Number(studentId), user);
 }

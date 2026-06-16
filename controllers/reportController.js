@@ -1,16 +1,8 @@
-/**
- * Report controller.
- * Express request handlers for generating and managing attendance reports.
- */
-
 import * as reportService from '../services/reportService.js';
 
-/**
- * GET / — Get all reports.
- */
 export async function getReports(req, res) {
   try {
-    const reports = await reportService.getAllReports();
+    const reports = await reportService.getAllReports(req.user);
     res.json({ success: true, data: reports });
   } catch (err) {
     const status = err.status || 500;
@@ -18,13 +10,10 @@ export async function getReports(req, res) {
   }
 }
 
-/**
- * GET /:date — Get a report for a specific date.
- */
 export async function getReport(req, res) {
   try {
     const { date } = req.params;
-    const report = await reportService.getReportByDate(date);
+    const report = await reportService.getReportByDate(date, req.user);
     res.json({ success: true, data: report });
   } catch (err) {
     const status = err.status || 500;
@@ -32,14 +21,10 @@ export async function getReport(req, res) {
   }
 }
 
-/**
- * POST /generate — Generate a new report for a date.
- * Body: { date: "YYYY-MM-DD" }
- */
 export async function generateReport(req, res) {
   try {
     const { date, classSection } = req.body;
-    const report = await reportService.generateReport(date, classSection);
+    const report = await reportService.generateReport(date, classSection, req.user);
     res.status(201).json({ success: true, data: report });
   } catch (err) {
     const status = err.status || 500;
@@ -47,13 +32,13 @@ export async function generateReport(req, res) {
   }
 }
 
-/**
- * DELETE /:id — Delete a report by ID.
- */
 export async function deleteReport(req, res) {
   try {
+    if (req.user && req.user.role === 'school') {
+      return res.status(403).json({ success: false, message: 'Access Denied: Schools cannot delete reports' });
+    }
     const id = Number(req.params.id);
-    await reportService.deleteReport(id);
+    await reportService.deleteReport(id, req.user);
     res.json({ success: true, message: 'Report deleted successfully' });
   } catch (err) {
     const status = err.status || 500;

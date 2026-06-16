@@ -9,6 +9,8 @@ import studentRoutes from './routes/studentRoutes.js'
 import attendanceRoutes from './routes/attendanceRoutes.js'
 import reportRoutes from './routes/reportRoutes.js'
 import classRoutes from './routes/classRoutes.js'
+import authRoutes from './routes/authRoutes.js'
+import { authMiddleware } from './middleware/auth.js'
 import { errorHandler } from './middleware/errorHandler.js'
 import { connectDB } from './config/db.js'
 
@@ -49,10 +51,11 @@ app.use('/api', async (req, res, next) => {
 })
 
 // ===== API Routes =====
-app.use('/api/students', studentRoutes)
-app.use('/api/attendance', attendanceRoutes)
-app.use('/api/reports', reportRoutes)
-app.use('/api/classes', classRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/students', authMiddleware, studentRoutes)
+app.use('/api/attendance', authMiddleware, attendanceRoutes)
+app.use('/api/reports', authMiddleware, reportRoutes)
+app.use('/api/classes', authMiddleware, classRoutes)
 
 // ===== Health Check =====
 app.get('/api/health', (req, res) => {

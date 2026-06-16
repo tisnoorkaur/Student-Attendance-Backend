@@ -1,16 +1,8 @@
-/**
- * Student controller.
- * Express request handlers for student CRUD and search endpoints.
- */
-
 import * as studentService from '../services/studentService.js';
 
-/**
- * GET / — List all students.
- */
 export async function getStudents(req, res) {
   try {
-    const students = await studentService.getAllStudents();
+    const students = await studentService.getAllStudents(req.user);
     res.json({ success: true, data: students });
   } catch (err) {
     const status = err.status || 500;
@@ -18,13 +10,10 @@ export async function getStudents(req, res) {
   }
 }
 
-/**
- * GET /:id — Get a single student by ID.
- */
 export async function getStudent(req, res) {
   try {
     const id = Number(req.params.id);
-    const student = await studentService.getStudentById(id);
+    const student = await studentService.getStudentById(id, req.user);
     res.json({ success: true, data: student });
   } catch (err) {
     const status = err.status || 500;
@@ -32,12 +21,12 @@ export async function getStudent(req, res) {
   }
 }
 
-/**
- * POST / — Create a new student.
- */
 export async function createStudent(req, res) {
   try {
-    const student = await studentService.createStudent(req.body);
+    if (req.user && req.user.role === 'school') {
+      return res.status(403).json({ success: false, message: 'Access Denied: Schools cannot create students' });
+    }
+    const student = await studentService.createStudent(req.body, req.user);
     res.status(201).json({ success: true, data: student });
   } catch (err) {
     const status = err.status || 500;
@@ -45,13 +34,13 @@ export async function createStudent(req, res) {
   }
 }
 
-/**
- * PUT /:id — Update an existing student.
- */
 export async function updateStudent(req, res) {
   try {
+    if (req.user && req.user.role === 'school') {
+      return res.status(403).json({ success: false, message: 'Access Denied: Schools cannot modify students' });
+    }
     const id = Number(req.params.id);
-    const student = await studentService.updateStudent(id, req.body);
+    const student = await studentService.updateStudent(id, req.body, req.user);
     res.json({ success: true, data: student });
   } catch (err) {
     const status = err.status || 500;
@@ -59,13 +48,13 @@ export async function updateStudent(req, res) {
   }
 }
 
-/**
- * DELETE /:id — Delete a student.
- */
 export async function deleteStudent(req, res) {
   try {
+    if (req.user && req.user.role === 'school') {
+      return res.status(403).json({ success: false, message: 'Access Denied: Schools cannot delete students' });
+    }
     const id = Number(req.params.id);
-    await studentService.deleteStudent(id);
+    await studentService.deleteStudent(id, req.user);
     res.json({ success: true, message: 'Student deleted successfully' });
   } catch (err) {
     const status = err.status || 500;
@@ -73,13 +62,10 @@ export async function deleteStudent(req, res) {
   }
 }
 
-/**
- * GET /search?q=query — Search students by name, roll number, or class section.
- */
 export async function searchStudents(req, res) {
   try {
     const query = req.query.q || '';
-    const students = await studentService.searchStudents(query);
+    const students = await studentService.searchStudents(query, req.user);
     res.json({ success: true, data: students });
   } catch (err) {
     const status = err.status || 500;

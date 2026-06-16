@@ -1,9 +1,50 @@
 import mongoose from 'mongoose';
+import { User } from '../models/User.js';
 
 /**
  * Establish connection to the MongoDB database.
  */
 let isConnected = false;
+
+async function seedDefaultUsers() {
+  try {
+    const userCount = await User.countDocuments();
+    if (userCount === 0) {
+      console.log('🌱 Seeding default users...');
+      
+      // Admin
+      const admin = new User({
+        username: 'admin',
+        password: 'adminpassword',
+        role: 'admin',
+        schoolName: 'System Administrator',
+      });
+      await admin.save();
+
+      // School 1
+      const school1 = new User({
+        username: 'school1',
+        password: 'schoolpassword',
+        role: 'school',
+        schoolName: 'Greenwood High School',
+      });
+      await school1.save();
+
+      // School 2
+      const school2 = new User({
+        username: 'school2',
+        password: 'schoolpassword',
+        role: 'school',
+        schoolName: 'Riverside Academy',
+      });
+      await school2.save();
+
+      console.log('✅ Default users seeded successfully!');
+    }
+  } catch (err) {
+    console.error('⚠️ Failed to seed default users:', err.message);
+  }
+}
 
 export async function connectDB() {
   if (isConnected) {
@@ -25,8 +66,12 @@ export async function connectDB() {
     🔋 MongoDB Connected: ${db.connection.host}
     📂 Database Name: ${db.connection.name}
     `);
+    
+    // Seed default users
+    await seedDefaultUsers();
   } catch (error) {
     console.error('❌ Failed to connect to MongoDB:', error.message);
     throw error;
   }
 }
+

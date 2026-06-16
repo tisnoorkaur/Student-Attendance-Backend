@@ -1,26 +1,11 @@
-/**
- * Student service layer.
- * Provides validated, async wrappers around the Student model.
- */
-
 import * as StudentModel from '../models/Student.js';
 
-/**
- * Get all students.
- * @returns {Promise<Array>}
- */
-export async function getAllStudents() {
-  return StudentModel.getAll();
+export async function getAllStudents(user) {
+  return StudentModel.getAll(user);
 }
 
-/**
- * Get a student by ID.
- * @param {number} id
- * @returns {Promise<object>}
- * @throws {Error} If student not found.
- */
-export async function getStudentById(id) {
-  const student = StudentModel.getById(id);
+export async function getStudentById(id, user) {
+  const student = await StudentModel.getById(id, user);
   if (!student) {
     const error = new Error(`Student with id ${id} not found`);
     error.status = 404;
@@ -29,13 +14,7 @@ export async function getStudentById(id) {
   return student;
 }
 
-/**
- * Create a new student with validation.
- * @param {object} data - { name, rollNumber, classSection }
- * @returns {Promise<object>}
- * @throws {Error} If required fields are missing.
- */
-export async function createStudent(data) {
+export async function createStudent(data, user) {
   if (!data.name || !data.name.trim()) {
     const error = new Error('Name is required');
     error.status = 400;
@@ -50,17 +29,11 @@ export async function createStudent(data) {
     name: data.name.trim(),
     rollNumber: data.rollNumber.toString().trim(),
     classSection: data.classSection ? data.classSection.trim() : '',
-  });
+    schoolId: data.schoolId,
+  }, user);
 }
 
-/**
- * Update an existing student with validation.
- * @param {number} id
- * @param {object} data - Fields to update.
- * @returns {Promise<object>}
- * @throws {Error} If student not found or validation fails.
- */
-export async function updateStudent(id, data) {
+export async function updateStudent(id, data, user) {
   if (data.name !== undefined && !data.name.trim()) {
     const error = new Error('Name cannot be empty');
     error.status = 400;
@@ -72,11 +45,11 @@ export async function updateStudent(id, data) {
     throw error;
   }
 
-  const updated = StudentModel.update(id, {
+  const updated = await StudentModel.update(id, {
     ...(data.name !== undefined && { name: data.name.trim() }),
     ...(data.rollNumber !== undefined && { rollNumber: data.rollNumber.toString().trim() }),
     ...(data.classSection !== undefined && { classSection: data.classSection.trim() }),
-  });
+  }, user);
 
   if (!updated) {
     const error = new Error(`Student with id ${id} not found`);
@@ -86,14 +59,8 @@ export async function updateStudent(id, data) {
   return updated;
 }
 
-/**
- * Delete a student by ID.
- * @param {number} id
- * @returns {Promise<boolean>}
- * @throws {Error} If student not found.
- */
-export async function deleteStudent(id) {
-  const removed = StudentModel.remove(id);
+export async function deleteStudent(id, user) {
+  const removed = await StudentModel.remove(id, user);
   if (!removed) {
     const error = new Error(`Student with id ${id} not found`);
     error.status = 404;
@@ -102,11 +69,6 @@ export async function deleteStudent(id) {
   return true;
 }
 
-/**
- * Search students by query string.
- * @param {string} query
- * @returns {Promise<Array>}
- */
-export async function searchStudents(query) {
-  return StudentModel.search(query);
+export async function searchStudents(query, user) {
+  return StudentModel.search(query, user);
 }
