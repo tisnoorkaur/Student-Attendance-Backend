@@ -10,10 +10,12 @@ export async function login(req, res) {
 
     const user = await User.findOne({ username: username.toLowerCase().trim() });
     if (!user) {
+      console.log('Login failed: user not found for username:', username);
       return res.status(401).json({ success: false, message: 'Invalid username or password' });
     }
 
     const isMatch = await user.comparePassword(password);
+    console.log('Login attempt:', username, 'User role:', user.role, 'Password matches:', isMatch);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid username or password' });
     }
