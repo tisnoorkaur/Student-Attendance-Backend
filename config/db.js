@@ -41,29 +41,60 @@ async function seedDefaultUsers() {
       }
     }
 
-    const userCount = await User.countDocuments();
-    if (userCount <= 1) {
-      console.log('🌱 Seeding default school users...');
-      
-      // School 1
-      const school1 = new User({
+    // School 1
+    let school1 = await User.findOne({ username: 'school1' });
+    if (!school1) {
+      console.log('🌱 Seeding school1...');
+      school1 = new User({
         username: 'school1',
         password: 'schoolpassword',
         role: 'school',
         schoolName: 'Greenwood High School',
       });
       await school1.save();
+    } else {
+      const isMatch = await school1.comparePassword('schoolpassword');
+      let updated = false;
+      if (!isMatch) {
+        console.log('🔄 Enforcing school1 password...');
+        school1.password = 'schoolpassword';
+        updated = true;
+      }
+      if (school1.role !== 'school') {
+        school1.role = 'school';
+        updated = true;
+      }
+      if (updated) {
+        await school1.save();
+      }
+    }
 
-      // School 2
-      const school2 = new User({
+    // School 2
+    let school2 = await User.findOne({ username: 'school2' });
+    if (!school2) {
+      console.log('🌱 Seeding school2...');
+      school2 = new User({
         username: 'school2',
         password: 'schoolpassword',
         role: 'school',
         schoolName: 'Riverside Academy',
       });
       await school2.save();
-
-      console.log('✅ Default users seeded successfully!');
+    } else {
+      const isMatch = await school2.comparePassword('schoolpassword');
+      let updated = false;
+      if (!isMatch) {
+        console.log('🔄 Enforcing school2 password...');
+        school2.password = 'schoolpassword';
+        updated = true;
+      }
+      if (school2.role !== 'school') {
+        school2.role = 'school';
+        updated = true;
+      }
+      if (updated) {
+        await school2.save();
+      }
     }
   } catch (err) {
     console.error('⚠️ Failed to seed default users:', err.message);
