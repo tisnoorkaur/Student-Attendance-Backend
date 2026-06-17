@@ -7,10 +7,6 @@ export function getScopeFilter(user, additionalQuery = {}) {
   
   return {
     ...additionalQuery,
-    $or: [
-      { schoolId: school },
-      { schoolId: { $exists: false } },
-      { schoolId: 'default-school' }
-    ]
+    schoolId: school
   };
 }

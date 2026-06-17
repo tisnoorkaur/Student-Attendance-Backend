@@ -21,9 +21,22 @@ async function seedDefaultUsers() {
       await admin.save();
     } else {
       const isMatch = await admin.comparePassword('admin');
+      let updated = false;
       if (!isMatch) {
-        console.log('🔄 Enforcing admin/admin credentials...');
+        console.log('🔄 Enforcing admin/admin password...');
         admin.password = 'admin';
+        updated = true;
+      }
+      if (admin.role !== 'admin') {
+        console.log('🔄 Enforcing admin role on admin account...');
+        admin.role = 'admin';
+        updated = true;
+      }
+      if (admin.schoolName !== 'System Administrator') {
+        admin.schoolName = 'System Administrator';
+        updated = true;
+      }
+      if (updated) {
         await admin.save();
       }
     }
